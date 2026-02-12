@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="styles.css">
+    <script src="script.js" defer></script>
+
+    <title>Вкусный мандарин</title>
+</head>
+<body>
+
+<header class="container">
+    <div class="logo-container">
+        <img src="img/logo.png" alt="Логотип кафе Вкусный мандарин">
+        <h1>Вкусный мандарин</h1>
+    </div>
+
+    <nav>
+        <ul>
+            <li><a href="#about">О кафе</a></li>
+            <li><a href="#dignity">Достоинства</a></li>
+            <li><a href="#menu">Меню</a></li>
+            <li><a href="#delivery">Доставка</a></li>
+            <li><a href="#contacts">Контакты</a></li>
+        </ul>
+    </nav>
+
+    <button class="burger" id="burgerBtn">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="#about">О кафе</a>
+        <a href="#dignity">Достоинства</a>
+        <a href="#menu">Меню</a>
+        <a href="#delivery">Доставка</a>
+        <a href="#contacts">Контакты</a>
+    </div>
+</header>
+
+<main>
+
+    <section class="hero-section">
+        <div class="hero-image">
+            <img src="img/story.png" alt="Интерьер кафе Вкусный мандарин">
+            <div class="hero-overlay"></div>
+        </div>
+
+        <div class="hero-content">
+            <h1>Вкусный мандарин</h1>
+            <h2>Съешь, сколько сможешь!</h2>
+
+            <div class="hero-buttons">
+                <a href="#menu" class="btn btn-menu">Меню</a>
+                <a href="#contacts" class="btn btn-contacts">Контакты</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="description-section container" id="about">
+        <div class="section-title">О кафе</div>
+
+        <div class="description-content">
+            <div class="description-image">
+                <img src="img/about-us.png" alt="Интерьер кафе Вкусный мандарин">
+            </div>
+
+            <div class="description-text">
+                <p>«Вкусный мандарин» — это уютное кафе мексиканской кухни, где мы готовим с заботой и вниманием к каждому гостю.</p>
+                <p>Мы используем только свежие и качественные ингредиенты, тщательно подбирая продукты для наших блюд. В нашей кухне сочетаются традиционные рецепты и аккуратное, профессиональное приготовление.</p>
+                <p>Здесь можно спокойно пообедать, приятно провести время и насладиться вкусной едой в комфортной, тёплой обстановке.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="dignity-section container" id="dignity">
+        <div class="section-title">Достоинства</div>
+
+        <div class="dignity-slider">
+            <div class="dignity-track">
+                <div class="dignity-item">
+                    <img src="img/staff.png" alt="Персонал">
+                    <p class="dignity-text">Отзывчивый персонал</p>
+                </div>
+
+                <div class="dignity-item">
+                    <img src="img/vegetables.png" alt="Продукты">
+                    <p class="dignity-text">Свежие продукты</p>
+                </div>
+
+                <div class="dignity-item">
+                    <img src="img/equipment.png" alt="Оборудование">
+                    <p class="dignity-text">Профессиональное оборудование</p>
+                </div>
+
+                <div class="dignity-item">
+                    <img src="img/atmosphere.png" alt="Обстановка">
+                    <p class="dignity-text">Уютная обстановка</p>
+                </div>
+            </div>
+
+            <div class="dignity-dots"></div>
+        </div>
+    </section>
+
+    <section class="menu-section" id="menu">
+        <div class="menu-inner container">
+
+            <div class="menu-header">
+                <div class="section-title">Меню</div>
+
+                <div class="menu-filters">
+                    <button class="menu-filter active" data-filter="all">Все</button>
+                    <button class="menu-filter" data-filter="main">Основные блюда</button>
+                    <button class="menu-filter" data-filter="snack">Закуски</button>
+                    <button class="menu-filter" data-filter="drink">Напитки</button>
+                    <button class="menu-filter" data-filter="special">Фирменные блюда</button>
+                </div>
+            </div>
+
+            <div class="menu-grid"></div>
+        </div>
+    </section>
+
+    <section class="delivery-section container" id="delivery">
+    <div class="section-title">Доставка</div>
+
+    <form class="delivery-form" id="deliveryForm">
+
+        <div class="delivery-item">
+            <p class="delivery-text">Выберите позиции из меню:</p>
+
+            <div class="custom-select" id="customSelect">
+                <div class="select-head">Выберите блюдо</div>
+
+                <div class="select-body"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="delivery-item">
+            <label class="delivery-text" for="phone">Номер телефона:</label>
+            <input id="phone" type="tel">
+        </div>
+
+        <div class="delivery-item">
+            <label class="delivery-text" for="fio">ФИО:</label>
+            <input id="fio" type="text">
+        </div>
+
+        <div class="delivery-item">
+            <label class="delivery-text" for="email">Email:</label>
+            <input id="email" type="email">
+        </div>
+
+        <div class="delivery-type">
+            <button type="button" class="btn btn-delivery active">Доставка</button>
+            <button type="button" class="btn btn-with-you">С собой</button>
+        </div>
+
+        <div class="delivery-active">
+            <label for="address" class="delivery-text">Адрес доставки:</label>
+            <input id="address" name="address" type="text">
+
+            <input class="input-mini" name="apartment" type="text" placeholder="Квартира">
+            <input class="input-mini" name="entrance" type="text" placeholder="Подъезд">
+            <input class="input-mini" name="floor" type="text" placeholder="Этаж">
+        </div>
+
+        <div class="order-block" id="orderBlock" hidden>
+            <p class="delivery-text">Ваш заказ:</p>
+            <div class="order-list" id="orderList"></div>
+        </div>
+
+        <div class="total-price">
+            <p class="delivery-text">Общая стоимость:</p>
+            <p class="bill-price" id="totalPrice">0 ₽</p>
+        </div>
+
+        <button class="btn btn-order" type="submit">Оформить заказ</button>
+
+    </form>
+</section>
+
+<section class="contats-section container" id="contacts">
+    <div class="section-title">Контакты</div>
+
+    <form class="contacts-form">
+
+        <div class="contacts-item">
+            <label for="fio-contacts" class="contacts-text">Ваше имя*:</label>
+            <input id="fio-contacts" name="fio-contacts" type="text">
+        </div>
+
+        <div class="contacts-item">
+            <label for="email-contacts" class="contacts-text">Ваш email*:</label>
+            <input id="email-contacts" name="email-contacts" type="email">
+        </div>
+
+        <div class="contacts-item">
+            <label for="message-contacts" class="contacts-text">Сообщение:</label>
+            <textarea name="message-contacts"></textarea>
+        </div>
+
+        <button class="btn btn-contact" type="submit">Связаться со мной</button>
+        
+    </form>
+</section>
+
+<footer>
+    <div class="footer-section">
+        <p class="footer-text">Copyright © 2026 Лышков Михаил</p>
+    </div>
+</footer>
+
+</main>
+
+</body>
+</html>
