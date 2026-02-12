@@ -5,6 +5,10 @@
     box-sizing: border-box;
 }
 
+input, textarea, select, button {
+    font-family: inherit;
+}
+
 body {
     background-color: #D6CBC1;
     font-family: 'Open Sans', Arial, sans-serif;
@@ -711,6 +715,10 @@ nav a:hover {
         max-width: 100%;
         padding: 0 20px;
         box-sizing: border-box;
+    }
+
+    input, textarea, select, button {
+        font-family: inherit;
     }
 
     .section-title {
