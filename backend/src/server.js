@@ -34,11 +34,67 @@ app.get('/api/dishes', async (req, res) => {
 
         res.json(result.rows);
     } catch (err) {
-        console.error(err);
+        console.error('Ошибка получения блюд:', err);
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
 
-app.listen(3000, () => {
-    console.log('Сервер запущен: http://localhost:3000');
+app.post('/api/orders', async (req, res) => {
+    try {
+        const {
+            name,
+            phone,
+            email,
+            deliveryType,
+            address,
+            items,
+            total
+        } = req.body;
+
+        if (!name || !phone || !email || !items || !items.length) {
+            return res.status(400).json({
+                message: 'Некорректные данные заказа'
+            });
+        }
+
+        const query = `
+            INSERT INTO orders
+            (
+                customer_name,
+                phone,
+                email,
+                delivery_type,
+                address,
+                items,
+                total_price
+            )
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
+        `;
+
+        await pool.query(query, [
+            name,
+            phone,
+            email,
+            deliveryType,
+            address || null,
+            JSON.stringify(items),
+            total
+        ]);
+
+        res.status(201).json({
+            message: 'Заказ успешно сохранён'
+        });
+
+    } catch (err) {
+        console.error('Ошибка сохранения заказа:', err);
+        res.status(500).json({
+            message: 'Ошибка сервера'
+        });
+    }
+});
+
+const PORT = 3000;
+
+app.listen(PORT, () => {
+    console.log(`Сервер запущен: http://localhost:${PORT}`);
 });

@@ -14,8 +14,11 @@ const pickupBtn = document.querySelector('.btn-with-you');
 const deliveryFields = document.querySelector('.delivery-active');
 const addressInput = document.getElementById('address');
 
+const contactsForm = document.querySelector('.contacts-form');
+
 let dishes = [];
 let total = 0;
+let orderItems = [];
 
 fetch('http://localhost:3000/api/dishes')
     .then(res => res.json())
@@ -112,6 +115,8 @@ head.addEventListener('click', () => {
 function addItem(name, price) {
     orderBlock.hidden = false;
 
+    orderItems.push({ name, price });
+
     const row = document.createElement('div');
     row.className = 'order-row';
 
@@ -123,6 +128,7 @@ function addItem(name, price) {
 
     row.querySelector('.remove-btn').addEventListener('click', () => {
         total -= price;
+        orderItems = orderItems.filter(item => item.name !== name);
         row.remove();
         updateTotal();
 
@@ -227,6 +233,77 @@ function goToSlide(index) {
     dots[index].classList.add('active');
 }
 
+function startAutoSlider() {
+    return setInterval(() => {
+        currentIndex++;
+
+        if (currentIndex >= items.length) {
+            currentIndex = 0;
+        }
+
+        goToSlide(currentIndex);
+    }, 4000);
+}
+
+let sliderInterval = null;
+
+function checkMobileSlider() {
+    if (window.innerWidth <= 768) {
+        if (!sliderInterval) {
+            sliderInterval = startAutoSlider();
+        }
+    } else {
+        if (sliderInterval) {
+            clearInterval(sliderInterval);
+            sliderInterval = null;
+        }
+    }
+}
+
+checkMobileSlider();
+
+window.addEventListener('resize', checkMobileSlider);
+
+contactsForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    clearErrors(contactsForm);
+
+    const name = document.getElementById('fio-contacts');
+    const email = document.getElementById('email-contacts');
+    const message = contactsForm.querySelector('textarea');
+
+    if (name.value.trim().length < 2) {
+        showError(name, 'Введите ваше имя');
+        return;
+    }
+
+    if (!isValidEmail(email.value)) {
+        showError(email, 'Введите корректный email');
+        return;
+    }
+
+    if (message.value && message.value.trim().length < 10) {
+        showError(message, 'Сообщение должно быть не короче 10 символов');
+        return;
+    }
+
+    emailjs.send(
+        'service_jl9ot7e',
+        'template_gqxwq5k',
+        {
+            name: name.value,
+            email: email.value,
+            message: message.value
+        }
+    ).then(() => {
+        alert('Сообщение успешно отправлено!');
+        contactsForm.reset();
+    }).catch((error) => {
+        console.error('Ошибка EmailJS:', error);
+        alert('Ошибка при отправке сообщения');
+    });
+});
+
 //валидация
 function isValidEmail(email) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -285,39 +362,37 @@ deliveryForm.addEventListener('submit', (e) => {
         return;
     }
 
+    fetch('http://localhost:3000/api/orders', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+        name: fio.value,
+        phone: phone.value,
+        email: email.value,
+        deliveryType: isDelivery ? 'delivery' : 'pickup',
+        address: isDelivery ? address.value : null,
+        items: orderItems,
+        total: total
+    })
+})
+.then(res => {
+    if (!res.ok) throw new Error('Ошибка отправки заказа');
+    return res.json();
+})
+.then(() => {
     alert('Заказ успешно оформлен');
+
     deliveryForm.reset();
     orderList.innerHTML = '';
     orderBlock.hidden = true;
+    orderItems = [];
     total = 0;
     updateTotal();
+})
+.catch(err => {
+    console.error(err);
+    alert('Ошибка при оформлении заказа');
 });
-
-const contactsForm = document.querySelector('.contacts-form');
-
-contactsForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    clearErrors(contactsForm);
-
-    const name = document.getElementById('fio-contacts');
-    const email = document.getElementById('email-contacts');
-    const message = contactsForm.querySelector('textarea');
-
-    if (name.value.trim().length < 2) {
-        showError(name, 'Введите ваше имя');
-        return;
-    }
-
-    if (!isValidEmail(email.value)) {
-        showError(email, 'Введите корректный email');
-        return;
-    }
-
-    if (message.value && message.value.trim().length < 10) {
-        showError(message, 'Сообщение должно быть не короче 10 символов');
-        return;
-    }
-
-    alert('Сообщение отправлено ');
-    contactsForm.reset();
 });
