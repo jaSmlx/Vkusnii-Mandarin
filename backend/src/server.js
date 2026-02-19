@@ -14,22 +14,22 @@ app.get('/', (req, res) => {
 app.get('/api/dishes', async (req, res) => {
     try {
         const result = await pool.query(`
-            SELECT 
-                dish_id,
-                name,
-                category,
-                price,
-                weight,
-                description,
-                ingredients,
-                calories,
-                proteins,
-                fats,
-                carbs,
-                image
+            SELECT
+            dish_id,
+            name,
+            category,
+            price,
+            weight,
+            description,
+            calories,
+            proteins::float,
+            fats::float,
+            carbs::float,
+            image,
+            ingredient 
             FROM dishes
             WHERE is_active = true
-            ORDER BY dish_id
+            ORDER BY dish_id;
         `);
 
         res.json(result.rows);
@@ -93,8 +93,7 @@ app.post('/api/orders', async (req, res) => {
     }
 });
 
-const PORT = 3000;
-
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`Сервер запущен: http://localhost:${PORT}`);
+    console.log(`Server started on port ${PORT}`);
 });
