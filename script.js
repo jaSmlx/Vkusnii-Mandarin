@@ -32,7 +32,7 @@ let total = 0;
 let currentIndex = 0;
 let sliderInterval = null;
 
-fetch('http://localhost:3000/api/dishes')
+fetch('/api/dishes')
     .then(res => res.json())
     .then(data => {
         dishes = data;
@@ -63,7 +63,7 @@ function renderMenu(items) {
                 <p class="overlay-desc">${dish.description}</p>
                 <p class="overlay-info"><b>Вес:</b> ${dish.weight} г</p>
                 <p class="overlay-info"><b>КБЖУ:</b> ${dish.calories} / ${dish.proteins} / ${dish.fats} / ${dish.carbs}</p>
-                <p class="overlay-info"><b>Состав:</b> ${dish.ingredients}</p>
+                <p class="overlay-info"><b>Состав:</b> ${dish.ingredient || '—'}</p>
             </div>
         `;
 
@@ -139,7 +139,7 @@ function addItem(name, price) {
 
     row.querySelector('.remove-btn').addEventListener('click', () => {
         total -= price;
-        orderItems = orderItems.filter(i => i !== name);
+        orderItems = orderItems.filter(i => i.name !== name);
         row.remove();
         updateTotal();
         if (!orderList.children.length) orderBlock.hidden = true;
@@ -272,7 +272,7 @@ deliveryForm.addEventListener('submit', e => {
     if (isDelivery && address.value.trim().length < 5)
         return showError(address, 'Введите адрес');
 
-    fetch('http://localhost:3000/api/orders', {
+    fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -284,13 +284,20 @@ deliveryForm.addEventListener('submit', e => {
             items: orderItems,
             total
         })
-    }).then(() => {
-        alert('Заказ оформлен');
-        deliveryForm.reset();
-        orderList.innerHTML = '';
-        orderBlock.hidden = true;
-        orderItems = [];
-        total = 0;
-        updateTotal();
+    }).then(res => {
+        if (res.ok) {
+            alert('Заказ оформлен');
+            deliveryForm.reset();
+            orderList.innerHTML = '';
+            orderBlock.hidden = true;
+            orderItems = [];
+            total = 0;
+            updateTotal();
+        } else {
+            alert('Ошибка при оформлении заказа');
+        }
+    }).catch(err => {
+        console.error(err);
+        alert('Ошибка сервера');
     });
 });
