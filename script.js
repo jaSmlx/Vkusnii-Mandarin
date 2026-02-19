@@ -1,3 +1,5 @@
+'use strict';
+
 const menuGrid = document.querySelector('.menu-grid');
 const filterButtons = document.querySelectorAll('.menu-filter');
 
@@ -15,97 +17,106 @@ const deliveryFields = document.querySelector('.delivery-active');
 const addressInput = document.getElementById('address');
 
 const contactsForm = document.querySelector('.contacts-form');
+const deliveryForm = document.getElementById('deliveryForm');
+
+const burgerBtn = document.getElementById('burgerBtn');
+const mobileMenu = document.getElementById('mobileMenu');
+
+const track = document.querySelector('.dignity-track');
+const items = document.querySelectorAll('.dignity-item');
+const dotsContainer = document.querySelector('.dignity-dots');
 
 let dishes = [];
-let total = 0;
 let orderItems = [];
+let total = 0;
+let currentIndex = 0;
+let sliderInterval = null;
 
 fetch('http://localhost:3000/api/dishes')
     .then(res => res.json())
-    .then(dishes => {
+    .then(data => {
+        dishes = data;
         renderMenu(dishes);
-        initMenuOverlay();
         renderSelect(dishes);
     })
-    .catch(err => {
-        console.error('Ошибка загрузки меню:', err);
-    });
+    .catch(console.error);
 
-function renderMenu(dishes) {
-    menuGrid.innerHTML = '';
+function renderMenu(items) {
+    const fragment = document.createDocumentFragment();
 
-    dishes.forEach(dish => {
+    items.forEach(dish => {
         const card = document.createElement('div');
         card.className = 'menu-item';
         card.dataset.category = dish.category;
 
         card.innerHTML = `
-            <img src="img/menu/${dish.image || 'shablon.png'}" alt="${dish.name}">
-
+            <img 
+                src="img/menu/${dish.image || 'shablon.png'}"
+                alt="${dish.name}"
+                loading="lazy"
+            >
             <p class="dish-text">${dish.name}</p>
             <p class="dish-price">${dish.price} ₽</p>
 
             <div class="menu-overlay">
                 <p class="overlay-title">${dish.name}</p>
-
-                <p class="overlay-desc">
-                    ${dish.description}
-                </p>
-
+                <p class="overlay-desc">${dish.description}</p>
                 <p class="overlay-info"><b>Вес:</b> ${dish.weight} г</p>
-                <p class="overlay-info">
-                    <b>КБЖУ:</b>
-                    ${dish.calories} /
-                    ${dish.proteins} /
-                    ${dish.fats} /
-                    ${dish.carbs}
-                </p>
-                <p class="overlay-info">
-                    <b>Состав:</b> ${dish.ingredients}
-                </p>
+                <p class="overlay-info"><b>КБЖУ:</b> ${dish.calories} / ${dish.proteins} / ${dish.fats} / ${dish.carbs}</p>
+                <p class="overlay-info"><b>Состав:</b> ${dish.ingredients}</p>
             </div>
         `;
 
-        menuGrid.appendChild(card);
+        fragment.appendChild(card);
     });
+
+    menuGrid.innerHTML = '';
+    menuGrid.appendChild(fragment);
 }
 
-function initMenuOverlay() {
-    const cards = document.querySelectorAll('.menu-item');
+menuGrid.addEventListener('click', e => {
+    const card = e.target.closest('.menu-item');
+    if (!card) return;
 
-    cards.forEach(card => {
-        card.addEventListener('click', () => {
+    menuGrid.querySelectorAll('.menu-item.active')
+        .forEach(c => c !== card && c.classList.remove('active'));
 
-            cards.forEach(c => {
-                if (c !== card) c.classList.remove('active');
-            });
+    card.classList.toggle('active');
+});
 
-            card.classList.toggle('active');
+filterButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+        filterButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        const filter = btn.dataset.filter;
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.style.display =
+                filter === 'all' || item.dataset.category === filter
+                    ? 'block'
+                    : 'none';
         });
     });
-}
+});
 
 function renderSelect(items) {
-    selectBody.innerHTML = '';
+    const fragment = document.createDocumentFragment();
 
     items.forEach(dish => {
         const option = document.createElement('div');
         option.className = 'select-item';
-        option.dataset.name = dish.name;
-        option.dataset.price = dish.price;
-
-        option.innerHTML = `
-            ${dish.name}
-            <span>${dish.price} ₽</span>
-        `;
+        option.innerHTML = `<span>${dish.name}</span><span>${dish.price} ₽</span>`;
 
         option.addEventListener('click', () => {
             addItem(dish.name, dish.price);
             select.classList.remove('open');
         });
 
-        selectBody.appendChild(option);
+        fragment.appendChild(option);
     });
+
+    selectBody.innerHTML = '';
+    selectBody.appendChild(fragment);
 }
 
 head.addEventListener('click', () => {
@@ -114,12 +125,12 @@ head.addEventListener('click', () => {
 
 function addItem(name, price) {
     orderBlock.hidden = false;
-
     orderItems.push({ name, price });
+    total += price;
+    updateTotal();
 
     const row = document.createElement('div');
     row.className = 'order-row';
-
     row.innerHTML = `
         <span>${name}</span>
         <span>${price} ₽</span>
@@ -128,45 +139,22 @@ function addItem(name, price) {
 
     row.querySelector('.remove-btn').addEventListener('click', () => {
         total -= price;
-        orderItems = orderItems.filter(item => item.name !== name);
+        orderItems = orderItems.filter(i => i !== name);
         row.remove();
         updateTotal();
-
-        if (!orderList.children.length) {
-            orderBlock.hidden = true;
-        }
+        if (!orderList.children.length) orderBlock.hidden = true;
     });
 
     orderList.appendChild(row);
-    total += price;
-    updateTotal();
 }
 
 function updateTotal() {
     totalPriceEl.textContent = `${total} ₽`;
 }
 
-filterButtons.forEach(button => {
-    button.addEventListener('click', () => {
-        filterButtons.forEach(btn => btn.classList.remove('active'));
-        button.classList.add('active');
-
-        const filter = button.dataset.filter;
-
-        document.querySelectorAll('.menu-item').forEach(item => {
-            if (filter === 'all' || item.dataset.category === filter) {
-                item.style.display = 'block';
-            } else {
-                item.style.display = 'none';
-            }
-        });
-    });
-});
-
 deliveryBtn.addEventListener('click', () => {
     deliveryBtn.classList.add('active');
     pickupBtn.classList.remove('active');
-
     deliveryFields.style.display = 'grid';
     addressInput.required = true;
 });
@@ -174,52 +162,28 @@ deliveryBtn.addEventListener('click', () => {
 pickupBtn.addEventListener('click', () => {
     pickupBtn.classList.add('active');
     deliveryBtn.classList.remove('active');
-
     deliveryFields.style.display = 'none';
     addressInput.required = false;
 });
-
-const burgerBtn = document.getElementById('burgerBtn');
-const mobileMenu = document.getElementById('mobileMenu');
 
 burgerBtn.addEventListener('click', () => {
     mobileMenu.classList.toggle('active');
 });
 
-mobileMenu.querySelectorAll('a').forEach(link => {
-    link.addEventListener('click', () => {
-        mobileMenu.classList.remove('active');
-    });
-});
-
-document.addEventListener('click', (event) => {
-    const isMenuOpen = mobileMenu.classList.contains('active');
-
-    if (!isMenuOpen) return;
-
-    const clickInsideMenu = mobileMenu.contains(event.target);
-    const clickOnBurger = burgerBtn.contains(event.target);
-
-    if (!clickInsideMenu && !clickOnBurger) {
+document.addEventListener('click', e => {
+    if (
+        mobileMenu.classList.contains('active') &&
+        !mobileMenu.contains(e.target) &&
+        !burgerBtn.contains(e.target)
+    ) {
         mobileMenu.classList.remove('active');
     }
 });
 
-const track = document.querySelector('.dignity-track');
-const items = document.querySelectorAll('.dignity-item');
-const dotsContainer = document.querySelector('.dignity-dots');
-
-let currentIndex = 0;
-
 items.forEach((_, i) => {
     const dot = document.createElement('div');
-    dot.classList.add('dignity-dot');
-    if (i === 0) dot.classList.add('active');
-
-    dot.addEventListener('click', () => {
-        goToSlide(i);
-    });
-
+    dot.className = 'dignity-dot' + (i === 0 ? ' active' : '');
+    dot.addEventListener('click', () => goToSlide(i));
     dotsContainer.appendChild(dot);
 });
 
@@ -228,90 +192,34 @@ const dots = document.querySelectorAll('.dignity-dot');
 function goToSlide(index) {
     currentIndex = index;
     track.style.transform = `translateX(-${index * 120}%)`;
-
-    dots.forEach(dot => dot.classList.remove('active'));
+    dots.forEach(d => d.classList.remove('active'));
     dots[index].classList.add('active');
 }
 
-function startAutoSlider() {
+function startSlider() {
     return setInterval(() => {
-        currentIndex++;
-
-        if (currentIndex >= items.length) {
-            currentIndex = 0;
-        }
-
+        currentIndex = (currentIndex + 1) % items.length;
         goToSlide(currentIndex);
     }, 4000);
 }
 
-let sliderInterval = null;
-
-function checkMobileSlider() {
-    if (window.innerWidth <= 768) {
-        if (!sliderInterval) {
-            sliderInterval = startAutoSlider();
-        }
-    } else {
-        if (sliderInterval) {
-            clearInterval(sliderInterval);
-            sliderInterval = null;
-        }
+function checkSlider() {
+    if (window.innerWidth <= 768 && !sliderInterval) {
+        sliderInterval = startSlider();
+    } else if (window.innerWidth > 768 && sliderInterval) {
+        clearInterval(sliderInterval);
+        sliderInterval = null;
     }
 }
 
-checkMobileSlider();
+checkSlider();
+window.addEventListener('resize', checkSlider);
 
-window.addEventListener('resize', checkMobileSlider);
+const isValidEmail = email =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-contactsForm.addEventListener('submit', function (e) {
-    e.preventDefault();
-    clearErrors(contactsForm);
-
-    const name = document.getElementById('fio-contacts');
-    const email = document.getElementById('email-contacts');
-    const message = contactsForm.querySelector('textarea');
-
-    if (name.value.trim().length < 2) {
-        showError(name, 'Введите ваше имя');
-        return;
-    }
-
-    if (!isValidEmail(email.value)) {
-        showError(email, 'Введите корректный email');
-        return;
-    }
-
-    if (message.value && message.value.trim().length < 10) {
-        showError(message, 'Сообщение должно быть не короче 10 символов');
-        return;
-    }
-
-    emailjs.send(
-        'service_jl9ot7e',
-        'template_gqxwq5k',
-        {
-            name: name.value,
-            email: email.value,
-            message: message.value
-        }
-    ).then(() => {
-        alert('Сообщение успешно отправлено!');
-        contactsForm.reset();
-    }).catch((error) => {
-        console.error('Ошибка EmailJS:', error);
-        alert('Ошибка при отправке сообщения');
-    });
-});
-
-//валидация
-function isValidEmail(email) {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
-function isValidPhone(phone) {
-    return /^\+?\d{10,15}$/.test(phone.replace(/\s|\(|\)|-/g, ''));
-}
+const isValidPhone = phone =>
+    /^\+?\d{10,15}$/.test(phone.replace(/\D/g, ''));
 
 function showError(input, message) {
     input.classList.add('input-error');
@@ -320,14 +228,34 @@ function showError(input, message) {
 }
 
 function clearErrors(form) {
-    form.querySelectorAll('.input-error').forEach(el => {
-        el.classList.remove('input-error');
-    });
+    form.querySelectorAll('.input-error')
+        .forEach(el => el.classList.remove('input-error'));
 }
 
-const deliveryForm = document.getElementById('deliveryForm');
+contactsForm.addEventListener('submit', e => {
+    e.preventDefault();
+    clearErrors(contactsForm);
 
-deliveryForm.addEventListener('submit', (e) => {
+    const name = document.getElementById('fio-contacts');
+    const email = document.getElementById('email-contacts');
+    const message = contactsForm.querySelector('textarea');
+
+    if (name.value.trim().length < 2) return showError(name, 'Введите имя');
+    if (!isValidEmail(email.value)) return showError(email, 'Некорректный email');
+    if (message.value && message.value.length < 10)
+        return showError(message, 'Минимум 10 символов');
+
+    emailjs.send('service_jl9ot7e', 'template_gqxwq5k', {
+        name: name.value,
+        email: email.value,
+        message: message.value
+    }).then(() => {
+        alert('Сообщение отправлено');
+        contactsForm.reset();
+    });
+});
+
+deliveryForm.addEventListener('submit', e => {
     e.preventDefault();
     clearErrors(deliveryForm);
 
@@ -337,62 +265,32 @@ deliveryForm.addEventListener('submit', (e) => {
     const address = document.getElementById('address');
     const isDelivery = deliveryBtn.classList.contains('active');
 
-    if (!orderList.children.length) {
-        alert('Добавьте хотя бы одно блюдо в заказ');
-        return;
-    }
-
-    if (!isValidPhone(phone.value)) {
-        showError(phone, 'Введите корректный номер телефона');
-        return;
-    }
-
-    if (fio.value.trim().split(' ').length < 2) {
-        showError(fio, 'Введите ФИО полностью');
-        return;
-    }
-
-    if (!isValidEmail(email.value)) {
-        showError(email, 'Введите корректный email');
-        return;
-    }
-
-    if (isDelivery && address.value.trim().length < 5) {
-        showError(address, 'Введите адрес доставки');
-        return;
-    }
+    if (!orderItems.length) return alert('Добавьте блюда');
+    if (!isValidPhone(phone.value)) return showError(phone, 'Телефон неверный');
+    if (fio.value.trim().split(' ').length < 2) return showError(fio, 'Введите ФИО');
+    if (!isValidEmail(email.value)) return showError(email, 'Email неверный');
+    if (isDelivery && address.value.trim().length < 5)
+        return showError(address, 'Введите адрес');
 
     fetch('http://localhost:3000/api/orders', {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-        name: fio.value,
-        phone: phone.value,
-        email: email.value,
-        deliveryType: isDelivery ? 'delivery' : 'pickup',
-        address: isDelivery ? address.value : null,
-        items: orderItems,
-        total: total
-    })
-})
-.then(res => {
-    if (!res.ok) throw new Error('Ошибка отправки заказа');
-    return res.json();
-})
-.then(() => {
-    alert('Заказ успешно оформлен');
-
-    deliveryForm.reset();
-    orderList.innerHTML = '';
-    orderBlock.hidden = true;
-    orderItems = [];
-    total = 0;
-    updateTotal();
-})
-.catch(err => {
-    console.error(err);
-    alert('Ошибка при оформлении заказа');
-});
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            name: fio.value,
+            phone: phone.value,
+            email: email.value,
+            deliveryType: isDelivery ? 'delivery' : 'pickup',
+            address: isDelivery ? address.value : null,
+            items: orderItems,
+            total
+        })
+    }).then(() => {
+        alert('Заказ оформлен');
+        deliveryForm.reset();
+        orderList.innerHTML = '';
+        orderBlock.hidden = true;
+        orderItems = [];
+        total = 0;
+        updateTotal();
+    });
 });

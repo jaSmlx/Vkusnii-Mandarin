@@ -195,6 +195,7 @@ nav a:hover {
     width: 164px;
     height: 50px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    will-change: transform;
 }
 
 .btn-menu {
@@ -971,6 +972,11 @@ nav a:hover {
     .select-body{
         margin-top: -40px;
         scrollbar-width: none;
+    }
+
+    .select-body::-webkit-scrollbar,
+    .contacts-form textarea::-webkit-scrollbar {
+        display: none;
     }
 
     .delivery-type {
